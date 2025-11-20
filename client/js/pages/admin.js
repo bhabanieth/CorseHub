@@ -16,6 +16,9 @@ async function renderAdminDashboard() {
         <button class="admin-tab active" onclick="switchAdminTab('dashboard')">
           <i class="fas fa-chart-line"></i> Dashboard
         </button>
+        <button class="admin-tab" onclick="switchAdminTab('analytics')">
+          <i class="fas fa-bar-chart"></i> Analytics
+        </button>
         <button class="admin-tab" onclick="switchAdminTab('courses')">
           <i class="fas fa-book"></i> Courses
         </button>
@@ -90,6 +93,9 @@ async function renderAdminDashboard() {
       <!-- Courses Tab -->
       <div id="tab-courses" class="tab-content"></div>
 
+      <!-- Analytics Tab -->
+      <div id="tab-analytics" class="tab-content"></div>
+
       <!-- Chapters Tab -->
       <div id="tab-chapters" class="tab-content"></div>
 
@@ -122,6 +128,8 @@ function switchAdminTab(tabName) {
     renderAdminChapters();
   } else if (tabName === 'announcements') {
     renderAdminAnnouncements();
+  } else if (tabName === 'analytics') {
+    renderAnalyticsDashboard();
   }
 }
 
@@ -380,6 +388,109 @@ async function renderAdminAnnouncements() {
     `;
   } catch (error) {
     tabContent.innerHTML = `<div style="color: var(--secondary);">Error loading announcements: ${error.message}</div>`;
+  }
+}
+
+async function renderAnalyticsDashboard() {
+  const tabContent = document.getElementById('tab-analytics');
+  tabContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading"></div> Loading analytics...</div>';
+
+  try {
+    const [courses, analyticsData] = await Promise.all([
+      fetch(`${API_BASE}/courses?t=${Date.now()}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_BASE}/analytics?t=${Date.now()}`).then(r => r.json()).catch(() => [])
+    ]);
+
+    // Group analytics by course
+    const courseAnalytics = {};
+    analyticsData.forEach(a => {
+      if (!courseAnalytics[a.courseId]) {
+        courseAnalytics[a.courseId] = { views: 0, lastViewed: null };
+      }
+      if (a.type === 'view') {
+        courseAnalytics[a.courseId].views = a.count || 0;
+        courseAnalytics[a.courseId].lastViewed = a.lastViewed;
+      }
+    });
+
+    // Sort courses by views
+    const sortedCourses = courses.sort((a, b) => {
+      const viewsA = courseAnalytics[a.id]?.views || 0;
+      const viewsB = courseAnalytics[b.id]?.views || 0;
+      return viewsB - viewsA;
+    });
+
+    tabContent.innerHTML = `
+      <div style="margin-bottom: 40px;">
+        <h3 style="color: var(--primary); margin-bottom: 25px;">
+          <i class="fas fa-eye"></i> Course Views Analytics
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
+          <div class="glass-card" style="padding: 20px; text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary); font-weight: 700;">
+              ${analyticsData.filter(a => a.type === 'view').reduce((sum, a) => sum + (a.count || 0), 0)}
+            </div>
+            <div style="color: var(--light-text-muted); margin-top: 10px;">Total Views</div>
+          </div>
+          
+          <div class="glass-card" style="padding: 20px; text-align: center;">
+            <div style="font-size: 2rem; color: var(--secondary); font-weight: 700;">
+              ${courses.length}
+            </div>
+            <div style="color: var(--light-text-muted); margin-top: 10px;">Total Courses</div>
+          </div>
+          
+          <div class="glass-card" style="padding: 20px; text-align: center;">
+            <div style="font-size: 2rem; color: var(--accent); font-weight: 700;">
+              ${courses.length > 0 ? Math.round((analyticsData.filter(a => a.type === 'view').reduce((sum, a) => sum + (a.count || 0), 0)) / courses.length) : 0}
+            </div>
+            <div style="color: var(--light-text-muted); margin-top: 10px;">Avg Views/Course</div>
+          </div>
+        </div>
+
+        <h4 style="color: var(--primary); margin-bottom: 20px; margin-top: 40px;">
+          <i class="fas fa-bar-chart"></i> Course Performance
+        </h4>
+        
+        ${sortedCourses.length > 0 ? `
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            ${sortedCourses.map((course, idx) => {
+              const views = courseAnalytics[course.id]?.views || 0;
+              const lastViewed = courseAnalytics[course.id]?.lastViewed;
+              const maxViews = Math.max(...sortedCourses.map(c => courseAnalytics[c.id]?.views || 0), 1);
+              const percentage = (views / maxViews) * 100;
+              
+              return `
+                <div class="glass-card" style="padding: 20px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div>
+                      <div style="font-weight: 600; font-size: 1.1rem;">${idx + 1}. ${course.title}</div>
+                      <div style="color: var(--light-text-muted); font-size: 0.9rem; margin-top: 5px;">
+                        ${lastViewed ? `Last viewed: ${getTimeAgo(lastViewed)}` : 'Never viewed'}
+                      </div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${views}</div>
+                      <div style="color: var(--light-text-muted); font-size: 0.9rem;">views</div>
+                    </div>
+                  </div>
+                  <div style="background: rgba(0, 212, 255, 0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; width: ${percentage}%;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : `
+          <div style="text-align: center; padding: 40px; color: var(--light-text-muted);">
+            <p>No analytics data yet. Users need to view courses for data to appear.</p>
+          </div>
+        `}
+      </div>
+    `;
+  } catch (error) {
+    tabContent.innerHTML = `<div style="color: var(--secondary);">Error loading analytics: ${error.message}</div>`;
   }
 }
 
