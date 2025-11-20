@@ -1,0 +1,13 @@
+node_modules/
+*.db
+*.sqlite
+*.sqlite3
+.env
+.DS_Store
+.vscode/
+dist/
+build/
+package-lock.json
+yarn.lock
+*.md
+README.md

@@ -1,0 +1,32 @@
+{
+  "admin": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin@123",
+      "created_at": "2025-11-20T07:47:11.345Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1763624886124,
+      "title": "DSA",
+      "description": "Full training courses",
+      "cover_image": "https://www.google.com/imgres?q=free%20image&imgurl=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F1323550%2Fpexels-photo-1323550.jpeg%3Fcs%3Dsrgb%26dl%3Dpexels-simon73-1323550.jpg%26fm%3Djpg&imgrefurl=https%3A%2F%2Fwww.pexels.com%2Fsearch%2Ffree%2F&docid=pB2ggFAh5BKxrM&tbnid=_r-yBt7aE06ALM&vet=12ahUKEwjchYzOnoCRAxVyXGcHHZGxGTYQM3oECBQQAA..i&w=4608&h=2963&hcb=2&ved=2ahUKEwjchYzOnoCRAxVyXGcHHZGxGTYQM3oECBQQAA",
+      "created_at": "2025-11-20T07:48:06.125Z",
+      "updated_at": "2025-11-20T07:48:06.131Z"
+    }
+  ],
+  "chapters": [
+    {
+      "id": 1763624939326,
+      "course_id": "1763624886124",
+      "title": "Chapter 1",
+      "content": "<h2 style=\"color: #00d4ff; margin: 20px 0 15px 0; font-size: 1.7rem;\">Chapter 1</h2><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">Title: \"Introduction to Programming\"</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">Content:<br>This is my first paragraph explaining something.</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">Here's another paragraph with more information.<br>#include &lt;stdio.h&gt; // Include the standard input-output library</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">int main() {<br>    int num1, num2, sum; // Declare three integer variables</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">// Prompt the user to enter two numbers<br>    printf(\"Enter two integers: \");</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">// Read the two integers from the user and store them in num1 and num2<br>    scanf(\"%d %d\", &amp;num1, &amp;num2);</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">// Calculate the sum of the two numbers<br>    sum = num1 + num2;</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">// Display the sum to the user<br>    printf(\"Sum: %d\\n\", sum);</p><p style=\"color: #ffffff; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px; font-weight: 500;\">return 0; // Indicate successful program execution<br>}</p><div style=\"margin: 30px 0;\"><img src=\"https://www.google.com/imgres?q=free%20image&amp;imgurl=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F1563356%2Fpexels-photo-1563356.jpeg%3Fcs%3Dsrgb%26dl%3Dpexels-thatguycraig000-1563356.jpg%26fm%3Djpg&amp;imgrefurl=https%3A%2F%2Fwww.pexels.com%2Fsearch%2Ffree%2F&amp;docid=pB2ggFAh5BKxrM&amp;tbnid=jGKf-g3aXbZC9M&amp;vet=12ahUKEwjchYzOnoCRAxVyXGcHHZGxGTYQM3oECCQQAA..i&amp;w=5472&amp;h=3648&amp;hcb=2&amp;ved=2ahUKEwjchYzOnoCRAxVyXGcHHZGxGTYQM3oECCQQAA\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);\"></div>",
+      "order_index": 0,
+      "created_at": "2025-11-20T07:48:59.326Z",
+      "updated_at": "2025-11-20T07:48:59.331Z"
+    }
+  ],
+  "announcements": []
+}
