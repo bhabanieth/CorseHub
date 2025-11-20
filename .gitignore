@@ -3,6 +3,7 @@ node_modules/
 *.sqlite
 *.sqlite3
 .env
+.env.local
 .DS_Store
 .vscode/
 dist/
@@ -11,3 +12,5 @@ package-lock.json
 yarn.lock
 *.md
 README.md
+server/db/database.json
+server/db/*.json
