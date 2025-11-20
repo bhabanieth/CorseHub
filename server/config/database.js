@@ -13,7 +13,7 @@ if (!fs.existsSync(dbDir)) {
 // Default database structure
 const defaultDB = {
   admin: [
-    { id: 1, username: 'admin', password: 'admin@123', created_at: new Date().toISOString() }
+    { id: 1, username: 'bhabani_admin', password: 'K7@mPx#9qR2$vL8nW4', created_at: new Date().toISOString() }
   ],
   courses: [],
   chapters: [],

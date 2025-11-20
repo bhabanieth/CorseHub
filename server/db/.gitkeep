@@ -1,0 +1,2 @@
+# This directory stores the database file
+# The database.json file is gitignored to preserve user data across deployments
