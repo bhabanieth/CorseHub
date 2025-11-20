@@ -168,6 +168,16 @@ async function renderAdminCourses() {
               <input type="text" class="form-control" id="courseTitle" required>
             </div>
             <div class="form-group">
+              <label class="form-label">Difficulty Level</label>
+              <select class="form-control" id="courseDifficulty">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
               <label class="form-label">Cover Image URL</label>
               <input type="text" class="form-control" id="courseCoverImage" placeholder="https://..." oninput="previewCourseImage()">
             </div>
@@ -397,16 +407,19 @@ async function handleCreateCourse(e) {
 
   const title = document.getElementById('courseTitle').value;
   const description = document.getElementById('courseDescription').value;
+  const difficulty = document.getElementById('courseDifficulty').value;
   let cover_image = document.getElementById('courseCoverImage').value;
   
   // Ensure image URL has protocol
   if (cover_image && cover_image.trim() && !cover_image.startsWith('http')) {
     cover_image = 'https://' + cover_image;
-  }  try {
+  }
+
+  try {
     const response = await fetch(`${API_BASE}/courses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, cover_image })
+      body: JSON.stringify({ title, description, cover_image, difficulty })
     });
 
     if (response.ok) {

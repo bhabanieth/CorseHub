@@ -17,7 +17,9 @@ const defaultDB = {
   ],
   courses: [],
   chapters: [],
-  announcements: []
+  announcements: [],
+  analytics: [],  // Track course views and engagement
+  courseVersions: []  // Track chapter changes/versions
 };
 
 // Load or initialize database
@@ -70,13 +72,14 @@ const query = {
     return db.courses.find(c => c.id == id);
   },
   
-  createCourse: (title, description, cover_image) => {
+  createCourse: (title, description, cover_image, difficulty = 'Beginner') => {
     loadDB(); // Reload before write
     const course = {
       id: Date.now(),
       title,
       description,
       cover_image,
+      difficulty,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -85,13 +88,14 @@ const query = {
     return course;
   },
   
-  updateCourse: (id, title, description, cover_image) => {
+  updateCourse: (id, title, description, cover_image, difficulty = 'Beginner') => {
     loadDB(); // Reload before write
     const course = db.courses.find(c => c.id == id);
     if (course) {
       course.title = title;
       course.description = description;
       course.cover_image = cover_image;
+      course.difficulty = difficulty;
       course.updated_at = new Date().toISOString();
       saveDB();
       return true;
@@ -215,6 +219,74 @@ const query = {
       db.announcements.splice(index, 1);
       saveDB();
       return true;
+    }
+    return false;
+  },
+
+  // Analytics queries
+  trackCourseView: (courseId) => {
+    loadDB();
+    const existingView = db.analytics.find(a => a.courseId == courseId && a.type === 'view');
+    if (existingView) {
+      existingView.count = (existingView.count || 0) + 1;
+      existingView.lastViewed = new Date().toISOString();
+    } else {
+      db.analytics.push({
+        id: Date.now(),
+        courseId,
+        type: 'view',
+        count: 1,
+        lastViewed: new Date().toISOString()
+      });
+    }
+    saveDB();
+  },
+
+  getAnalytics: (courseId) => {
+    loadDB();
+    if (courseId) {
+      return db.analytics.filter(a => a.courseId == courseId);
+    }
+    return db.analytics;
+  },
+
+  // Versioning queries
+  createVersion: (chapterId, title, content, versionNote = '') => {
+    loadDB();
+    const version = {
+      id: Date.now(),
+      chapterId,
+      title,
+      content,
+      versionNote,
+      createdAt: new Date().toISOString()
+    };
+    if (!db.courseVersions) db.courseVersions = [];
+    db.courseVersions.push(version);
+    saveDB();
+    return version;
+  },
+
+  getChapterVersions: (chapterId) => {
+    loadDB();
+    if (!db.courseVersions) return [];
+    return db.courseVersions
+      .filter(v => v.chapterId == chapterId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  restoreVersion: (versionId) => {
+    loadDB();
+    const version = db.courseVersions.find(v => v.id == versionId);
+    if (version) {
+      const chapter = db.chapters.find(ch => ch.id == version.chapterId);
+      if (chapter) {
+        chapter.content = version.content;
+        chapter.title = version.title;
+        chapter.updated_at = new Date().toISOString();
+        saveDB();
+        return true;
+      }
     }
     return false;
   }

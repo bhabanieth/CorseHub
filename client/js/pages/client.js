@@ -1,5 +1,26 @@
 // Client-side pages
 
+// Pagination settings
+const COURSES_PER_PAGE = 6;
+let currentPage = 1;
+
+// Get difficulty badge color
+function getDifficultyColor(difficulty) {
+  const colors = {
+    'Beginner': '#00ff88',
+    'Intermediate': '#ffa500',
+    'Advanced': '#ff006e'
+  };
+  return colors[difficulty] || '#00d4ff';
+}
+
+// Calculate reading time (rough estimate: 200 words per minute)
+function calculateReadingTime(content) {
+  if (!content) return 0;
+  const wordCount = content.split(/\s+/).length;
+  return Math.ceil(wordCount / 200);
+}
+
 async function renderClientHome() {
   const mainContent = document.getElementById('main-content');
   mainContent.innerHTML = '';
@@ -10,6 +31,11 @@ async function renderClientHome() {
     fetch(`${API_BASE}/announcements${cacheBuster}`).then(r => r.json()).catch(() => []),
     fetch(`${API_BASE}/courses${cacheBuster}`).then(r => r.json()).catch(() => [])
   ]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(courses.length / COURSES_PER_PAGE);
+  const startIdx = (currentPage - 1) * COURSES_PER_PAGE;
+  const paginatedCourses = courses.slice(startIdx, startIdx + COURSES_PER_PAGE);
 
   mainContent.innerHTML = `
     <!-- Hero Section -->
@@ -46,14 +72,14 @@ async function renderClientHome() {
 
     <!-- Courses Section -->
     <div class="courses-container">
-      <h2 class="section-title">📚 Available Courses</h2>
+      <h2 class="section-title">📚 Available Courses (${courses.length})</h2>
       ${courses.length > 0 ? `
         <div class="courses-grid">
-          ${courses.map(course => `
+          ${paginatedCourses.map(course => `
             <div class="course-card">
               ${course.cover_image ? `
                 <div class="course-cover">
-                  <img src="${course.cover_image}" alt="${course.title}" onerror="this.style.display='none';">
+                  <img src="${course.cover_image}" alt="${course.title}" loading="lazy" onerror="this.style.display='none';" style="width: 100%; height: 150px; object-fit: cover;">
                 </div>
               ` : `
                 <div class="course-header">
@@ -63,7 +89,12 @@ async function renderClientHome() {
                 </div>
               `}
               <div style="flex-grow: 1;">
-                <div class="course-title">${course.title}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div class="course-title">${course.title}</div>
+                  <span style="background: ${getDifficultyColor(course.difficulty || 'Beginner')}; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                    ${course.difficulty || 'Beginner'}
+                  </span>
+                </div>
                 <div class="course-description">${course.description || 'No description available'}</div>
                 <div class="course-meta">
                   <span class="course-chapters">
@@ -73,13 +104,28 @@ async function renderClientHome() {
                 </div>
               </div>
               <div class="course-actions">
-                <button class="btn-small" onclick="window.location.hash='#course/${course.id}'">
+                <button class="btn-small" onclick="trackCourseView(${course.id}); window.location.hash='#course/${course.id}'">
                   <i class="fas fa-eye"></i> View Course
                 </button>
               </div>
             </div>
           `).join('')}
         </div>
+        
+        <!-- Pagination -->
+        ${totalPages > 1 ? `
+          <div style="display: flex; justify-content: center; gap: 10px; margin-top: 40px;">
+            ${currentPage > 1 ? `<button class="btn-small" onclick="changePage(${currentPage - 1})" style="padding: 8px 12px;"><i class="fas fa-chevron-left"></i></button>` : ''}
+            <div style="display: flex; gap: 5px; align-items: center;">
+              ${Array.from({length: totalPages}, (_, i) => i + 1).map(page => `
+                <button class="btn-small" onclick="changePage(${page})" style="padding: 8px 12px; background: ${page === currentPage ? 'var(--primary)' : 'var(--glass-bg)'}; color: ${page === currentPage ? 'var(--dark-bg)' : 'var(--light-text)'};">
+                  ${page}
+                </button>
+              `).join('')}
+            </div>
+            ${currentPage < totalPages ? `<button class="btn-small" onclick="changePage(${currentPage + 1})" style="padding: 8px 12px;"><i class="fas fa-chevron-right"></i></button>` : ''}
+          </div>
+        ` : ''}
       ` : `
         <div style="text-align: center; padding: 60px 20px; color: var(--light-text-muted);">
           <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px; display: block; opacity: 0.5;"></i>
@@ -88,6 +134,20 @@ async function renderClientHome() {
       `}
     </div>
   `;
+}
+
+function changePage(page) {
+  currentPage = page;
+  window.location.hash = '#home';
+  setTimeout(() => renderClientHome(), 100);
+}
+
+async function trackCourseView(courseId) {
+  try {
+    await fetch(`${API_BASE}/analytics/track/${courseId}`, { method: 'POST' });
+  } catch (error) {
+    console.log('Analytics tracking:', error);
+  }
 }
 
 async function renderCoursePage(courseId) {
