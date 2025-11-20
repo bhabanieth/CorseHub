@@ -2,16 +2,29 @@ const express = require('express');
 const { query } = require('../config/database');
 const router = express.Router();
 
+// Helper function to add chapter count to courses
+function addChapterCount(course) {
+  const chapters = query.getChaptersByCourse(course.id);
+  return { ...course, chapters: chapters.length };
+}
+
 // Get all courses
 router.get('/', (req, res) => {
   const courses = query.getAllCourses();
-  res.json(courses);
+  // Add chapter count to each course
+  const coursesWithCounts = courses.map(addChapterCount);
+  res.json(coursesWithCounts);
 });
 
 // Get single course
 router.get('/:id', (req, res) => {
   const course = query.getCourse(req.params.id);
-  res.json(course || {});
+  if (course) {
+    const courseWithCount = addChapterCount(course);
+    res.json(courseWithCount);
+  } else {
+    res.json({});
+  }
 });
 
 // Create course (Admin only)
