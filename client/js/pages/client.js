@@ -4,10 +4,11 @@ async function renderClientHome() {
   const mainContent = document.getElementById('main-content');
   mainContent.innerHTML = '';
 
-  // Fetch announcements and courses
+  // Fetch announcements and courses with cache busting
+  const cacheBuster = `?t=${Date.now()}`;
   const [announcements, courses] = await Promise.all([
-    fetch(`${API_BASE}/announcements`).then(r => r.json()).catch(() => []),
-    fetch(`${API_BASE}/courses`).then(r => r.json()).catch(() => [])
+    fetch(`${API_BASE}/announcements${cacheBuster}`).then(r => r.json()).catch(() => []),
+    fetch(`${API_BASE}/courses${cacheBuster}`).then(r => r.json()).catch(() => [])
   ]);
 
   mainContent.innerHTML = `
@@ -94,9 +95,10 @@ async function renderCoursePage(courseId) {
   mainContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading"></div> Loading course...</div>';
 
   try {
+    const cacheBuster = `?t=${Date.now()}`;
     const [course, chapters] = await Promise.all([
-      fetch(`${API_BASE}/courses/${courseId}`).then(r => r.json()),
-      fetch(`${API_BASE}/chapters/course/${courseId}`).then(r => r.json()).catch(() => [])
+      fetch(`${API_BASE}/courses/${courseId}${cacheBuster}`).then(r => r.json()),
+      fetch(`${API_BASE}/chapters/course/${courseId}${cacheBuster}`).then(r => r.json()).catch(() => [])
     ]);
 
     mainContent.innerHTML = `
@@ -174,9 +176,10 @@ async function renderChapterPage(chapterId) {
   mainContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="loading"></div> Loading chapter...</div>';
 
   try {
-    const chapter = await fetch(`${API_BASE}/chapters/${chapterId}`).then(r => r.json());
-    const course = await fetch(`${API_BASE}/courses/${chapter.course_id}`).then(r => r.json());
-    const chapters = await fetch(`${API_BASE}/chapters/course/${chapter.course_id}`).then(r => r.json());
+    const cacheBuster = `?t=${Date.now()}`;
+    const chapter = await fetch(`${API_BASE}/chapters/${chapterId}${cacheBuster}`).then(r => r.json());
+    const course = await fetch(`${API_BASE}/courses/${chapter.course_id}${cacheBuster}`).then(r => r.json());
+    const chapters = await fetch(`${API_BASE}/chapters/course/${chapter.course_id}${cacheBuster}`).then(r => r.json());
 
     const currentIndex = chapters.findIndex(c => c.id == chapterId);
     const prevChapter = chapters[currentIndex - 1];

@@ -55,19 +55,23 @@ function initDB() {
 const query = {
   // Admin queries
   adminLogin: (username, password) => {
+    loadDB(); // Reload before read
     return db.admin.find(a => a.username === username && a.password === password);
   },
 
   // Course queries
   getAllCourses: () => {
+    loadDB(); // Reload before read
     return db.courses.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   },
   
   getCourse: (id) => {
+    loadDB(); // Reload before read
     return db.courses.find(c => c.id == id);
   },
   
   createCourse: (title, description, cover_image) => {
+    loadDB(); // Reload before write
     const course = {
       id: Date.now(),
       title,
@@ -82,6 +86,7 @@ const query = {
   },
   
   updateCourse: (id, title, description, cover_image) => {
+    loadDB(); // Reload before write
     const course = db.courses.find(c => c.id == id);
     if (course) {
       course.title = title;
@@ -95,6 +100,7 @@ const query = {
   },
   
   deleteCourse: (id) => {
+    loadDB(); // Reload before write
     const index = db.courses.findIndex(c => c.id == id);
     if (index !== -1) {
       db.courses.splice(index, 1);
@@ -108,16 +114,19 @@ const query = {
 
   // Chapter queries
   getChaptersByCourse: (courseId) => {
+    loadDB(); // Reload before read
     return db.chapters
       .filter(ch => ch.course_id == courseId)
       .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
   },
   
   getChapter: (id) => {
+    loadDB(); // Reload before read
     return db.chapters.find(ch => ch.id == id);
   },
   
   createChapter: (course_id, title, content, order_index) => {
+    loadDB(); // Reload before write
     const chapter = {
       id: Date.now(),
       course_id,
@@ -133,6 +142,7 @@ const query = {
   },
   
   updateChapter: (id, title, content, order_index) => {
+    loadDB(); // Reload before write
     const chapter = db.chapters.find(ch => ch.id == id);
     if (chapter) {
       chapter.title = title;
@@ -146,6 +156,7 @@ const query = {
   },
   
   deleteChapter: (id) => {
+    loadDB(); // Reload before write
     const index = db.chapters.findIndex(ch => ch.id == id);
     if (index !== -1) {
       db.chapters.splice(index, 1);
@@ -157,16 +168,19 @@ const query = {
 
   // Announcement queries
   getActiveAnnouncements: () => {
+    loadDB(); // Reload before read
     return db.announcements
       .filter(a => a.is_active)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   },
   
   getAllAnnouncements: () => {
+    loadDB(); // Reload before read
     return db.announcements.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   },
   
   createAnnouncement: (title, content, expires_at) => {
+    loadDB(); // Reload before write
     const announcement = {
       id: Date.now(),
       title,
@@ -181,6 +195,7 @@ const query = {
   },
   
   updateAnnouncement: (id, title, content, is_active, expires_at) => {
+    loadDB(); // Reload before write
     const announcement = db.announcements.find(a => a.id == id);
     if (announcement) {
       announcement.title = title;
@@ -194,6 +209,7 @@ const query = {
   },
   
   deleteAnnouncement: (id) => {
+    loadDB(); // Reload before write
     const index = db.announcements.findIndex(a => a.id == id);
     if (index !== -1) {
       db.announcements.splice(index, 1);
