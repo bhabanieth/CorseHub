@@ -4,8 +4,8 @@
   "description": "Course sharing platform",
   "main": "server/server.js",
   "scripts": {
-    "start": "cd server && node server.js",
-    "dev": "cd server && node server.js",
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
     "build": "echo 'No build step needed'"
   },
   "keywords": [],
