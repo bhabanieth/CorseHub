@@ -169,12 +169,15 @@ async function renderAdminCourses() {
             </div>
             <div class="form-group">
               <label class="form-label">Cover Image URL</label>
-              <input type="text" class="form-control" id="courseCoverImage" placeholder="https://...">
+              <input type="text" class="form-control" id="courseCoverImage" placeholder="https://..." oninput="previewCourseImage()">
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Course Description</label>
             <textarea class="form-control" id="courseDescription" rows="3" placeholder="Describe your course..."></textarea>
+          </div>
+          <div id="courseImagePreview" style="margin: 20px 0; text-align: center; display: none;">
+            <img id="coursePreviewImg" src="" alt="Preview" style="max-width: 200px; height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);">
           </div>
           <button type="submit" class="btn-primary">
             <i class="fas fa-save"></i> Create Course
@@ -375,14 +378,31 @@ async function renderAdminAnnouncements() {
 // Using plain textarea for text and simple URL inputs for media
 
 // Form handlers
+
+function previewCourseImage() {
+  const imageUrl = document.getElementById('courseCoverImage').value.trim();
+  const previewDiv = document.getElementById('courseImagePreview');
+  const previewImg = document.getElementById('coursePreviewImg');
+  
+  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    previewImg.src = imageUrl;
+    previewDiv.style.display = 'block';
+  } else {
+    previewDiv.style.display = 'none';
+  }
+}
+
 async function handleCreateCourse(e) {
   e.preventDefault();
-  
+
   const title = document.getElementById('courseTitle').value;
   const description = document.getElementById('courseDescription').value;
-  const cover_image = document.getElementById('courseCoverImage').value;
-
-  try {
+  let cover_image = document.getElementById('courseCoverImage').value;
+  
+  // Ensure image URL has protocol
+  if (cover_image && cover_image.trim() && !cover_image.startsWith('http')) {
+    cover_image = 'https://' + cover_image;
+  }  try {
     const response = await fetch(`${API_BASE}/courses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -436,8 +456,14 @@ async function handleCreateChapter(e) {
     }
   });
   
+  
   if (imageUrl && imageUrl.trim()) {
-    content += `<div style="margin: 30px 0;"><img src="${escapeHtml(imageUrl)}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);"></div>`;
+    // Ensure URL has protocol
+    let finalImageUrl = imageUrl.trim();
+    if (!finalImageUrl.startsWith('http://') && !finalImageUrl.startsWith('https://')) {
+      finalImageUrl = 'https://' + finalImageUrl;
+    }
+    content += `<div style="margin: 30px 0;"><img src="${escapeHtml(finalImageUrl)}" alt="chapter-image" loading="lazy" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2); display: block;" onerror="this.style.display='none';"></div>`;
   }
   
   if (videoUrl && videoUrl.trim()) {

@@ -50,11 +50,17 @@ async function renderClientHome() {
         <div class="courses-grid">
           ${courses.map(course => `
             <div class="course-card">
-              <div class="course-header">
-                <div class="course-icon">
-                  <i class="fas fa-${getIconForCourse(course.title)}"></i>
+              ${course.cover_image ? `
+                <div class="course-cover">
+                  <img src="${course.cover_image}" alt="${course.title}" onerror="this.style.display='none';">
                 </div>
-              </div>
+              ` : `
+                <div class="course-header">
+                  <div class="course-icon">
+                    <i class="fas fa-${getIconForCourse(course.title)}"></i>
+                  </div>
+                </div>
+              `}
               <div style="flex-grow: 1;">
                 <div class="course-title">${course.title}</div>
                 <div class="course-description">${course.description || 'No description available'}</div>
@@ -98,6 +104,12 @@ async function renderCoursePage(courseId) {
         <button class="btn-nav" onclick="window.history.back()">
           <i class="fas fa-arrow-left"></i> Back
         </button>
+
+        ${course.cover_image ? `
+          <div style="margin: 30px 0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0, 212, 255, 0.15);">
+            <img src="${course.cover_image}" alt="${course.title}" style="width: 100%; height: auto; max-height: 400px; object-fit: cover; display: block;" onerror="this.style.display='none';">
+          </div>
+        ` : ''}
 
         <div class="chapter-header" style="margin-top: 30px;">
           <h1 class="chapter-title">${course.title}</h1>
