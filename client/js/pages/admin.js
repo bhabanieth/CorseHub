@@ -635,10 +635,116 @@ async function toggleAnnouncement(id, isActive) {
   }
 }
 
-function editCourse(id) {
-  showAlert('Edit feature coming soon', 'info');
+async function editCourse(id) {
+  try {
+    // Load the course data
+    const course = await fetch(`${API_BASE}/courses/${id}?t=${Date.now()}`).then(r => r.json());
+    
+    if (!course || !course.id) {
+      showAlert('Course not found', 'danger');
+      return;
+    }
+
+    // Show edit modal with course data
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div style="background: var(--dark-bg); border: 2px solid var(--primary); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 style="color: var(--primary); margin-bottom: 20px;">
+          <i class="fas fa-edit"></i> Edit Course
+        </h3>
+        
+        <form id="editCourseForm" onsubmit="handleEditCourse(event, ${id})">
+          <div class="form-group">
+            <label class="form-label">Course Title *</label>
+            <input type="text" class="form-control" id="editCourseTitle" value="${course.title}" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Course Description</label>
+            <textarea class="form-control" id="editCourseDescription" rows="3">${course.description || ''}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Cover Image URL</label>
+            <input type="text" class="form-control" id="editCourseCoverImage" value="${course.cover_image || ''}" oninput="previewEditCourseImage()">
+          </div>
+          
+          <div id="editCourseImagePreview" style="margin: 20px 0; text-align: center; ${(course.cover_image ? 'display: block' : 'display: none')};">
+            <img id="editCoursePreviewImg" src="${course.cover_image || ''}" alt="Preview" style="max-width: 200px; height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);">
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn-secondary" onclick="this.closest('[style*=position]').remove()" style="padding: 8px 16px; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="submit" class="btn-primary" style="padding: 8px 16px; background: var(--primary); color: var(--dark-bg); border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    
+  } catch (error) {
+    showAlert('Error loading course: ' + error.message, 'danger');
+  }
+}
+
+function previewEditCourseImage() {
+  const imageUrl = document.getElementById('editCourseCoverImage').value.trim();
+  const previewDiv = document.getElementById('editCourseImagePreview');
+  const previewImg = document.getElementById('editCoursePreviewImg');
+  
+  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+    previewImg.src = imageUrl;
+    previewDiv.style.display = 'block';
+  } else {
+    previewDiv.style.display = 'none';
+  }
+}
+
+async function handleEditCourse(e, courseId) {
+  e.preventDefault();
+  
+  const title = document.getElementById('editCourseTitle').value;
+  const description = document.getElementById('editCourseDescription').value;
+  let cover_image = document.getElementById('editCourseCoverImage').value;
+  
+  // Ensure image URL has protocol
+  if (cover_image && cover_image.trim() && !cover_image.startsWith('http')) {
+    cover_image = 'https://' + cover_image;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE}/courses/${courseId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, cover_image })
+    });
+
+    if (response.ok) {
+      showAlert('Course updated successfully!', 'success');
+      // Close the modal
+      document.querySelector('[style*="position: fixed"]').remove();
+      // Refresh the courses list
+      await renderAdminCourses();
+      await loadDashboardStats();
+    } else {
+      showAlert('Error updating course', 'danger');
+    }
+  } catch (error) {
+    showAlert('Error: ' + error.message, 'danger');
+  }
 }
 
 function editChapter(id) {
-  showAlert('Edit feature coming soon', 'info');
+  showAlert('Edit chapter feature coming soon', 'info');
 }
