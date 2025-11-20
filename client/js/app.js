@@ -1,5 +1,5 @@
 // Global configuration
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://corsehub.onrender.com/api';
 let currentUser = null;
 let isAdmin = false;
 
