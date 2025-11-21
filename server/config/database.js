@@ -7,9 +7,13 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER;
 const dbDir = isProd ? '/var/data' : path.join(__dirname, '../db');
 const dbPath = path.join(dbDir, 'database.json');
 
-// Ensure db directory exists
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+// Ensure db directory exists (skip if on production - Render handles persistent disk)
+if (!isProd && !fs.existsSync(dbDir)) {
+  try {
+    fs.mkdirSync(dbDir, { recursive: true });
+  } catch (err) {
+    console.error('Failed to create db directory:', err.message);
+  }
 }
 
 // Default database structure
