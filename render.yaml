@@ -10,3 +10,7 @@ services:
       - key: NODE_ENV
         value: production
     rootDir: ./
+    disks:
+      - name: data
+        mountPath: /var/data
+        sizeGB: 1

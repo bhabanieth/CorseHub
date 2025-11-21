@@ -2,8 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const dbPath = path.join(__dirname, '../db/database.json');
-const dbDir = path.join(__dirname, '../db');
+// Use persistent storage path on Render, fallback to local for development
+const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER;
+const dbDir = isProd ? '/var/data' : path.join(__dirname, '../db');
+const dbPath = path.join(dbDir, 'database.json');
 
 // Ensure db directory exists
 if (!fs.existsSync(dbDir)) {
