@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const seedData = require('./seedData');
 
 // Determine database directory with multiple fallback options
 let dbDir;
@@ -44,12 +45,12 @@ try {
   console.error('This will cause data loss! Database will not persist.');
 }
 
-// Default database structure
+// Default database structure with seed data
 const defaultDB = {
   admin: [
     { id: 1, username: 'bhabani_admin', password: 'K7@mPx#9qR2$vL8nW4', created_at: new Date().toISOString() }
   ],
-  courses: [],
+  courses: seedData.courses || [],
   chapters: [],
   announcements: [],
   analytics: [],  // Track course views and engagement
