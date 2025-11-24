@@ -63,14 +63,28 @@ function loadDB() {
   try {
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath, 'utf-8');
-      db = JSON.parse(data);
-      console.log(`Database loaded successfully. Courses: ${db.courses.length}, Chapters: ${db.chapters.length}`);
+      const parsedDb = JSON.parse(data);
+      
+      // Verify the database has the expected structure
+      if (parsedDb.courses && Array.isArray(parsedDb.courses)) {
+        db = parsedDb;
+        console.log(`✓ Database loaded from ${dbPath} - Courses: ${db.courses.length}, Chapters: ${db.chapters.length}`);
+      } else {
+        console.warn(`Database file exists but has invalid structure, using default`);
+        db = defaultDB;
+      }
     } else {
-      console.log('Database file not found, creating new one');
-      saveDB();
+      console.log(`Database file not found at ${dbPath}, creating new one`);
+      db = defaultDB;
+      const saved = saveDB();
+      if (saved) {
+        console.log('✓ New database file created');
+      } else {
+        console.error('✗ FAILED to create database file - data will not persist!');
+      }
     }
   } catch (error) {
-    console.error('Error loading database:', error);
+    console.error(`Error loading database: ${error.message}`);
     db = defaultDB;
     saveDB();
   }
@@ -87,18 +101,25 @@ function saveDB() {
     
     // Verify the file was actually written
     if (fs.existsSync(dbPath)) {
-      console.log(`Database saved successfully to ${dbPath}`);
+      console.log(`✓ Database saved to ${dbPath}`);
+      return true;
     } else {
-      console.error(`WARNING: Database file not found immediately after write to ${dbPath}`);
+      console.error(`✗ Database file not found immediately after write to ${dbPath} - CRITICAL`);
+      return false;
     }
   } catch (error) {
-    console.error('Error saving database:', error);
+    console.error(`✗ Error saving database: ${error.message}`);
+    return false;
   }
 }
 
 function initDB() {
+  console.log('='.repeat(50));
+  console.log('INITIALIZING DATABASE');
+  console.log('='.repeat(50));
   loadDB();
-  console.log('Database initialized successfully');
+  console.log(`✓ Database initialized with ${db.courses.length} courses`);
+  console.log('='.repeat(50));
 }
 
 // Database query methods
