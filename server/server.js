@@ -26,6 +26,7 @@ const chapterRoutes = require('./routes/chapters');
 const announcementRoutes = require('./routes/announcements');
 const analyticsRoutes = require('./routes/analytics');
 const versionsRoutes = require('./routes/versions');
+const backupRoutes = require('./routes/backup');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
@@ -33,6 +34,7 @@ app.use('/api/chapters', chapterRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/versions', versionsRoutes);
+app.use('/api/backup', backupRoutes);
 
 // Serve static files
 app.get('*', (req, res) => {

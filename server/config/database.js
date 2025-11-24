@@ -2,42 +2,46 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-// Use persistent storage path on Render, fallback to local for development
-const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER;
-const dbDir = isProd ? '/var/data' : path.join(__dirname, '../db');
+// Determine database directory with multiple fallback options
+let dbDir;
+const isProd = process.env.NODE_ENV === 'production';
+
+if (isProd) {
+  // Try persistent disk first, then fall back to app root
+  if (fs.existsSync('/var/data')) {
+    dbDir = '/var/data';
+  } else {
+    dbDir = path.join(__dirname, '../data');
+  }
+} else {
+  // Local development
+  dbDir = path.join(__dirname, '../db');
+}
+
 const dbPath = path.join(dbDir, 'database.json');
 
 console.log(`Database configuration:
   - Environment: ${isProd ? 'PRODUCTION (Render)' : 'DEVELOPMENT (Local)'}
   - Database directory: ${dbDir}
   - Database file: ${dbPath}
+  - Using persistent disk: ${dbDir === '/var/data'}
 `);
 
 // Ensure db directory exists and is writable
-if (!isProd && !fs.existsSync(dbDir)) {
-  try {
+try {
+  if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
     console.log(`Created database directory: ${dbDir}`);
-  } catch (err) {
-    console.error('Failed to create db directory:', err.message);
   }
-}
-
-// Verify directory is writable on production
-if (isProd) {
-  try {
-    if (!fs.existsSync(dbDir)) {
-      console.warn(`WARNING: Database directory ${dbDir} does not exist on Render!`);
-    } else {
-      // Test write access
-      const testFile = path.join(dbDir, '.write-test');
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
-      console.log(`Database directory ${dbDir} is writable`);
-    }
-  } catch (err) {
-    console.error(`ERROR: Database directory ${dbDir} is not writable:`, err.message);
-  }
+  
+  // Test write access
+  const testFile = path.join(dbDir, '.write-test');
+  fs.writeFileSync(testFile, 'test');
+  fs.unlinkSync(testFile);
+  console.log(`Database directory ${dbDir} is writable`);
+} catch (err) {
+  console.error(`ERROR: Database directory ${dbDir} is not writable:`, err.message);
+  console.error('This will cause data loss! Database will not persist.');
 }
 
 // Default database structure
@@ -80,7 +84,13 @@ function saveDB() {
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), 'utf-8');
-    console.log('Database saved successfully');
+    
+    // Verify the file was actually written
+    if (fs.existsSync(dbPath)) {
+      console.log(`Database saved successfully to ${dbPath}`);
+    } else {
+      console.error(`WARNING: Database file not found immediately after write to ${dbPath}`);
+    }
   } catch (error) {
     console.error('Error saving database:', error);
   }
@@ -328,6 +338,11 @@ const query = {
       }
     }
     return false;
+  },
+
+  getAllData: () => {
+    loadDB();
+    return db;
   }
 };
 
