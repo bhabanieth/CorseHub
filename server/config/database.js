@@ -7,12 +7,36 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.RENDER;
 const dbDir = isProd ? '/var/data' : path.join(__dirname, '../db');
 const dbPath = path.join(dbDir, 'database.json');
 
-// Ensure db directory exists (skip if on production - Render handles persistent disk)
+console.log(`Database configuration:
+  - Environment: ${isProd ? 'PRODUCTION (Render)' : 'DEVELOPMENT (Local)'}
+  - Database directory: ${dbDir}
+  - Database file: ${dbPath}
+`);
+
+// Ensure db directory exists and is writable
 if (!isProd && !fs.existsSync(dbDir)) {
   try {
     fs.mkdirSync(dbDir, { recursive: true });
+    console.log(`Created database directory: ${dbDir}`);
   } catch (err) {
     console.error('Failed to create db directory:', err.message);
+  }
+}
+
+// Verify directory is writable on production
+if (isProd) {
+  try {
+    if (!fs.existsSync(dbDir)) {
+      console.warn(`WARNING: Database directory ${dbDir} does not exist on Render!`);
+    } else {
+      // Test write access
+      const testFile = path.join(dbDir, '.write-test');
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
+      console.log(`Database directory ${dbDir} is writable`);
+    }
+  } catch (err) {
+    console.error(`ERROR: Database directory ${dbDir} is not writable:`, err.message);
   }
 }
 

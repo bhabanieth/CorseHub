@@ -11,6 +11,7 @@ function addChapterCount(course) {
 // Get all courses
 router.get('/', (req, res) => {
   const courses = query.getAllCourses();
+  console.log(`GET /api/courses - Retrieved ${courses.length} courses`);
   // Add chapter count to each course
   const coursesWithCounts = courses.map(addChapterCount);
   res.json(coursesWithCounts);
