@@ -36,7 +36,9 @@ function loadDB() {
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath, 'utf-8');
       db = JSON.parse(data);
+      console.log(`Database loaded successfully. Courses: ${db.courses.length}, Chapters: ${db.chapters.length}`);
     } else {
+      console.log('Database file not found, creating new one');
       saveDB();
     }
   } catch (error) {
@@ -48,7 +50,13 @@ function loadDB() {
 
 function saveDB() {
   try {
+    // Ensure directory exists before writing
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), 'utf-8');
+    console.log('Database saved successfully');
   } catch (error) {
     console.error('Error saving database:', error);
   }
@@ -90,6 +98,7 @@ const query = {
       updated_at: new Date().toISOString()
     };
     db.courses.push(course);
+    console.log(`Course created: ${title} (ID: ${course.id}). Total courses: ${db.courses.length}`);
     saveDB();
     return course;
   },
